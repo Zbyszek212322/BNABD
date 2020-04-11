@@ -1,51 +1,68 @@
 package com.example.demo;
 
+import com.example.demo.dao.DepartmentRepository;
 import com.example.demo.dao.EmployeeRepository;
+import com.example.demo.entity.Department;
 import com.example.demo.entity.Employee;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Component
 public class RunAtStart {
 
-    private final EmployeeRepository employeeRepository;
+    @Autowired
+    private DepartmentRepository departmentRepository;
 
     @Autowired
-    public RunAtStart(EmployeeRepository employeeRepository) {
-        super();
-        this.employeeRepository = employeeRepository;
-    }
+    private EmployeeRepository employeeRepository;
 
     @PostConstruct
     public void runAtStart() {
 
-        Employee employee = new Employee();
-        employee.setFirstName("Jan");
-        employee.setLastName("Kowalski");
-        employee.setSalary(new BigDecimal("3000.00"));
-        employeeRepository.save(employee);
+        // Tworzenie działów
+        Department dept1 = departmentRepository.save(new Department("Finances"));
+        Department dept2 = departmentRepository.save(new Department("Production"));
+        Department dept3 = departmentRepository.save(new Department("To be deleted"));
 
-        Employee employee1 = new Employee();
-        employee1.setFirstName("Jan");
-        employee1.setLastName("Nowak");
-        employee1.setSalary(new BigDecimal("3500.00"));
-        employeeRepository.save(employee1);
+        // Tworzenie pracowników
+        Employee emp1 = employeeRepository.save(new Employee("Jan", "Nowak",
+                new BigDecimal(3000.00), dept1));
+        Employee emp2 = employeeRepository.save(new Employee("Jan", "Kowalski",
+                new BigDecimal(3500.00), dept2));
+        Employee emp3 = employeeRepository.save(new Employee("Adam", "Wiśniewski",
+                new BigDecimal(3200.00), dept2));
+        Employee emp4 = employeeRepository.save(new Employee("Anna", "Wójcik",
+                new BigDecimal(2500.00), dept2));
 
-        // wykorzystanie specyfikacji kolekcji przy wyszukiwaniu pracowników
-        //Iterable<Employee> jans = employeeRepository.findByFirstName("Jan");
-        /*Employee jan = jans.iterator().next();
-        System.out.println("Janek: " + jan);*/
+        // Prezentowanie pracowników danego działu podanego jako parametr
+        String departmentName = "Production";
 
-        /*for (Employee e:jans) {
-            System.out.println("Janek: " + e);
-        }*/
+        List<Employee> deptName = employeeRepository.findByDepartment(departmentRepository.findByDepartmentName(departmentName));
+        for (Employee e:deptName) {
+            System.out.println(departmentName + " Department's staff: " + e);
+        }
 
-        Iterable<Employee> em = employeeRepository.findAllWhereName("K%");
-        for (Employee e:em) {
-            System.out.println(e);
+        // Usuwanie pracowników i działów
+        employeeRepository.deleteById(4L);
+        departmentRepository.deleteById(3L);
+
+        // Modyfikacja wypłaty pracownika
+        employeeRepository.save(new Employee(3L,"Adam", "Wiśniewski",
+                new BigDecimal(4000.00), dept2));
+
+        //Modyfikacja nazwy działu
+        departmentRepository.save(new Department(2L, "Sales"));
+
+        // Prezentowanie pracowników danego działu podanego jako parametr po wcześniejszych modyfikacjach
+        departmentName = "Sales";
+
+        List<Employee> deptName1 = employeeRepository.findByDepartment(departmentRepository.findByDepartmentName(departmentName));
+        for (Employee e:deptName1) {
+            System.out.println(departmentName + " Department's staff: " + e);
         }
     }
 }

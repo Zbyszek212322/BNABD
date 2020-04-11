@@ -1,14 +1,12 @@
 package com.example.demo.dao;
 
+import com.example.demo.entity.Department;
 import com.example.demo.entity.Employee;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
-public interface EmployeeRepository extends CrudRepository <Employee, Long> {
+import java.util.List;
 
-    // Wprowadzenie do repozytorium kolekcji oraz metody pozwalającej na refleksję
-    //Iterable<Employee> findByFirstName(String firstName);
+public interface EmployeeRepository extends CrudRepository<Employee, Long> {
 
-    @Query("SELECT e FROM Employee e where e.lastName LIKE %?1")
-    Iterable<Employee> findAllWhereName(String lastName);
+    List<Employee> findByDepartment(Department department);
 }
